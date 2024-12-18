@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAL-tUfCYkXAWgBsUpVL-Is1d_D5-rEGX8",
@@ -12,7 +12,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 function getCookie(name) {
   const cookies = document.cookie.split("; ");
@@ -35,15 +35,14 @@ async function sortearNome() {
   }
 
   try {
-    const nomesRef = collection(db, "nomes");
-    const nomesSnapshot = await getDocs(nomesRef);
-    const nomes = nomesSnapshot.docs.map(doc => doc.data().nome);
-
-    if (nomes.length === 0) {
+    const nomesRef = ref(db, "nomes");
+    const snapshot = await get(nomesRef);
+    if (!snapshot.exists()) {
       alert("Nenhum nome disponível para sorteio.");
       return;
     }
 
+    const nomes = Object.values(snapshot.val()).map(obj => obj.nome);
     const sorteado = nomes[Math.floor(Math.random() * nomes.length)];
     alert(`Você sorteou o ${sorteado}. Sorteou você mesmo? Fala comigo (simpleuser) pra eu arrumar.`);
     setCookie("jasorteou", "true", 1);
